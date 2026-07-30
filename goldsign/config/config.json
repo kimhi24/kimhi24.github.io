@@ -13,7 +13,7 @@
     "downColor": "#CC0000"        
   },
   "api": {
-    "providerUrl": "http://www.thaigold.info/RealTimeDataV2/gtdata_.json",
+    "providerUrl": "https://api.allorigins.win/raw?url=http://www.thaigold.info/RealTimeDataV2/gtdata_.json",
     "refreshIntervalMs": 30000    
   },
   "features": {
