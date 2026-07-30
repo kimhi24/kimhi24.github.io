@@ -3,37 +3,40 @@
 export const GoldProvider = {
     lastData: null,
 
-    async getLatestPrice(apiUrl) {
+    // ฟังก์ชันดึงข้อมูล เลียนแบบการทำงานของ file_get_contents ใน PHP
+    async getLatestPrice() {
         try {
-            // ดึงข้อมูลจาก API ตัวใหม่ (api.chnwt.dev)
-            const response = await fetch(apiUrl, { cache: 'no-store' });
+            // เป้าหมายคือ URL .txt จากโค้ด PHP ที่คุณส่งมา
+            const targetUrl = 'http://www.thaigold.info/RealTimeDataV2/gtdata_.txt';
             
+            // ใช้ Proxy เพื่อเลี่ยงการโดนบล็อก (ทำหน้าที่แทน Backend PHP)
+            const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
+
+            const response = await fetch(proxyUrl, { cache: 'no-store' });
             if (!response.ok) throw new Error('API Response not ok');
             
-            const result = await response.json();
+            const proxyData = await response.json();
             
-            // ตรวจสอบว่ามีข้อมูลส่งกลับมาถูกต้องหรือไม่
-            if (result.status !== "success") throw new Error('Invalid API Status');
-
-            const data = result.response;
+            // ข้อมูลจาก Proxy จะถูกห่อหุ้มมาใน .contents เราจึงต้องแกะออกและแปลงเป็น Array เหมือน JSON_decode ใน PHP
+            const rawData = JSON.parse(proxyData.contents);
             
-            // ฟังก์ชันสำหรับลบลูกน้ำ (,) ออกจากตัวเลข และแปลงเป็นทศนิยม
+            // ฟังก์ชันลบลูกน้ำ (,) ออกจากตัวเลข
             const parsePrice = (priceStr) => {
                 if (!priceStr) return 0;
                 return parseFloat(priceStr.toString().replace(/,/g, ''));
             };
 
-            // ดึงข้อมูลมาจับคู่ (Mapping) ให้ตรงกับระบบหน้าจอของเรา
+            // Mapping ข้อมูลให้ตรงกับ Array [0] = ทองคำแท่ง, [1] = ทองรูปพรรณ (ตามโครงสร้างใน PHP)
             const standardData = {
                 bar: {
-                    buy: parsePrice(data.price.gold_bar.buy),
-                    sell: parsePrice(data.price.gold_bar.sell)
+                    buy: parsePrice(rawData[0]?.bid),
+                    sell: parsePrice(rawData[0]?.ask)
                 },
                 ornament: {
-                    buy: parsePrice(data.price.gold.buy),     // ทองรูปพรรณ รับซื้อ
-                    sell: parsePrice(data.price.gold.sell)    // ทองรูปพรรณ ขายออก
+                    buy: parsePrice(rawData[1]?.bid),
+                    sell: parsePrice(rawData[1]?.ask)
                 },
-                updateTime: data.update_time, // เวลาที่สมาคมประกาศ
+                updateTime: rawData[0]?.time || new Date().toLocaleTimeString('th-TH'),
                 status: 'connected'
             };
 
@@ -42,7 +45,7 @@ export const GoldProvider = {
 
         } catch (error) {
             console.error("Connection lost or API error:", error);
-            // หากดึงไม่ได้ ให้แสดงสถานะขาดการเชื่อมต่อ (หน้าจอจะขึ้น ---)
+            // หากดึงข้อมูลไม่ได้ ให้แสดงหน้าจอเป็น ---
             return { status: 'disconnected' };
         }
     }
