@@ -232,3 +232,7 @@ body {
 body.tv-mode {
     cursor: none;
 }
+/* บังคับซ่อนกล่องส่วนต่างราคาทันทีหากไม่มีตัวเลข เพื่อไม่ให้ดันตัวเลขราคาหลัก */
+.price-diff:empty {
+    display: none;
+}
