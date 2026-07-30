@@ -1,7 +1,7 @@
 // js/gold.js
 
 let previousPrices = {
-    barBuy: 0, barSell: 0, ornamentBuy: 0, ornamentSell: 0
+    barBuy: 0, barSell: 0
 };
 
 const formatNumber = (num) => {
@@ -12,6 +12,9 @@ const animatePriceUpdate = (elementId, diffId, newValue, oldValue) => {
     const el = document.getElementById(elementId);
     const diffEl = document.getElementById(diffId);
     
+    // Safety Check: ถ้าหา element ไม่เจอ (เช่น ถูกลบจาก HTML ไปแล้ว) ให้หยุดทำงานทันที ป้องกัน Error
+    if (!el) return; 
+
     if (newValue === oldValue || oldValue === 0) {
         el.textContent = formatNumber(newValue);
         if(diffEl) diffEl.textContent = ""; 
@@ -51,40 +54,36 @@ const animatePriceUpdate = (elementId, diffId, newValue, oldValue) => {
 export function updateGoldUI(data) {
     const updateText = document.getElementById('last-update');
 
-    // 🚨 กรณีขาดการเชื่อมต่อกับ API
+    // กรณีขาดการเชื่อมต่อ
     if (data.status === 'disconnected') {
-        document.getElementById('bar-buy').textContent = "---";
-        document.getElementById('bar-sell').textContent = "---";
-        document.getElementById('ornament-buy').textContent = "---";
-        document.getElementById('ornament-sell').textContent = "---";
+        const barBuy = document.getElementById('bar-buy');
+        const barSell = document.getElementById('bar-sell');
         
-        // ล้างส่วนต่างราคาออก
-        ['bar-diff', 'ornament-diff'].forEach(id => {
+        if (barBuy) barBuy.textContent = "---";
+        if (barSell) barSell.textContent = "---";
+        
+        ['bar-diff'].forEach(id => {
             const el = document.getElementById(id);
             if (el) { el.textContent = ""; el.classList.remove('up', 'down'); }
         });
 
-        // แสดงข้อความเตือน
         updateText.textContent = "⚠️ ขาดการเชื่อมต่อ: ไม่สามารถดึงข้อมูลราคาทองได้";
         updateText.style.color = "var(--down-color)";
         updateText.style.fontWeight = "bold";
-        return; // หยุดการทำงานส่วนอื่น
+        return; 
     }
 
-    // กรณีเชื่อมต่อปกติ (คืนค่าสีข้อความอัปเดต)
+    // กรณีปกติ
     updateText.style.color = "";
     updateText.style.fontWeight = "normal";
     updateText.textContent = `อัปเดตล่าสุด: ${data.updateTime}`;
 
+    // อัปเดตเฉพาะทองคำแท่ง
     animatePriceUpdate('bar-buy', null, data.bar.buy, previousPrices.barBuy);
     animatePriceUpdate('bar-sell', 'bar-diff', data.bar.sell, previousPrices.barSell);
-    animatePriceUpdate('ornament-buy', null, data.ornament.buy, previousPrices.ornamentBuy);
-    animatePriceUpdate('ornament-sell', 'ornament-diff', data.ornament.sell, previousPrices.ornamentSell);
 
     previousPrices = {
         barBuy: data.bar.buy,
-        barSell: data.bar.sell,
-        ornamentBuy: data.ornament.buy,
-        ornamentSell: data.ornament.sell
+        barSell: data.bar.sell
     };
 }
