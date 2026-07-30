@@ -5,24 +5,36 @@ export const GoldProvider = {
 
     async getLatestPrice(apiUrl) {
         try {
-            // ดึงข้อมูลจาก API จริง
+            // ดึงข้อมูลจาก API ตัวใหม่ (api.chnwt.dev)
             const response = await fetch(apiUrl, { cache: 'no-store' });
             
             if (!response.ok) throw new Error('API Response not ok');
             
-            const rawData = await response.json();
+            const result = await response.json();
             
+            // ตรวจสอบว่ามีข้อมูลส่งกลับมาถูกต้องหรือไม่
+            if (result.status !== "success") throw new Error('Invalid API Status');
+
+            const data = result.response;
+            
+            // ฟังก์ชันสำหรับลบลูกน้ำ (,) ออกจากตัวเลข และแปลงเป็นทศนิยม
+            const parsePrice = (priceStr) => {
+                if (!priceStr) return 0;
+                return parseFloat(priceStr.toString().replace(/,/g, ''));
+            };
+
+            // ดึงข้อมูลมาจับคู่ (Mapping) ให้ตรงกับระบบหน้าจอของเรา
             const standardData = {
                 bar: {
-                    buy: parseFloat(rawData[0]?.bid || 0),
-                    sell: parseFloat(rawData[0]?.ask || 0)
+                    buy: parsePrice(data.price.gold_bar.buy),
+                    sell: parsePrice(data.price.gold_bar.sell)
                 },
                 ornament: {
-                    buy: parseFloat(rawData[1]?.bid || 0),
-                    sell: parseFloat(rawData[1]?.ask || 0)
+                    buy: parsePrice(data.price.gold.buy),     // ทองรูปพรรณ รับซื้อ
+                    sell: parsePrice(data.price.gold.sell)    // ทองรูปพรรณ ขายออก
                 },
-                updateTime: rawData[0]?.time || new Date().toLocaleTimeString('th-TH'),
-                status: 'connected' // เพิ่ม Flag สถานะการเชื่อมต่อ
+                updateTime: data.update_time, // เวลาที่สมาคมประกาศ
+                status: 'connected'
             };
 
             this.lastData = standardData;
@@ -30,7 +42,7 @@ export const GoldProvider = {
 
         } catch (error) {
             console.error("Connection lost or API error:", error);
-            // คืนค่าสถานะตัดการเชื่อมต่อ ห้ามส่งข้อมูลปลอมเด็ดขาด
+            // หากดึงไม่ได้ ให้แสดงสถานะขาดการเชื่อมต่อ (หน้าจอจะขึ้น ---)
             return { status: 'disconnected' };
         }
     }
