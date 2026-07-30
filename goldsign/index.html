@@ -25,23 +25,27 @@
         </div>
     </div>
 
-    <!-- ส่วนหัว (Header) -->
-    <div class="header-left"></div>
-        <div class="header-center" style="display: flex; align-items: center; justify-content: center;">
-            <!-- บังคับใส่ที่อยู่ไฟล์รูปและลบคำสั่งซ่อน (display: none) ออกไป -->
-            <img id="shop-logo" src="images/logo.png" style="height: 100px; margin-right: 20px; object-fit: contain;" alt="โลโก้ร้าน">
-            
-            <!-- ชื่อร้านปล่อยให้เป็น Dynamic รอรับค่าจาก JavaScript เหมือนเดิม -->
+ <!-- ส่วนหัว (Header) -->
+    <header class="top-bar">
+        <div class="header-left">
+            <div id="date-display" class="date-text">--/--/----</div>
+        </div>
+        <div class="header-center">
             <h1 id="shop-name" style="margin: 0;">กำลังโหลดชื่อร้าน...</h1>
         </div>
         <div class="header-right">
-            <div id="date-display" class="date-text">--/--/----</div>
             <div id="time-display" class="time-text">--:--:--</div>
         </div>
     </header>
 
     <!-- พื้นที่แสดงราคาทอง (Main Dashboard) -->
     <main class="dashboard-content">
+        
+        <!-- โลโก้ขนาดใหญ่ ย้ายมาตรงกลางจอ (เหนือราคาทองวันนี้) -->
+        <div style="text-align: center; margin-bottom: 15px; margin-top: 20px;">
+            <img id="shop-logo" src="images/logo.png" style="height: 140px; width: 140px; object-fit: contain; filter: drop-shadow(0px 4px 8px rgba(0,0,0,0.15));" alt="โลโก้ร้าน">
+        </div>
+
         <div class="page-title">
             <h2>ราคาทองวันนี้</h2>
             <p id="last-update" class="update-text">อัปเดตล่าสุด: กำลังโหลด...</p>
