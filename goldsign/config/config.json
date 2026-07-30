@@ -5,10 +5,10 @@
     "logo": "images/logo.png"
   },
   "theme": {
-    "primaryColor": "#D4AF37",    
-    "secondaryColor": "#FFE169",  
-    "backgroundColor": "#FFFFFF", 
-    "accentColor": "#CC0000",     
+    "primaryColor": "#FFFFFF",    
+    "secondaryColor": "#B8860B",  
+    "backgroundColor": "#FDFBF7", 
+    "accentColor": "#D4AF37",     
     "upColor": "#009900",         
     "downColor": "#CC0000"        
   },
