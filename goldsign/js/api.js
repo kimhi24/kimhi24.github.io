@@ -3,30 +3,40 @@
 export const GoldProvider = {
     lastData: null,
 
-    // ฟังก์ชันดึงข้อมูล เลียนแบบการทำงานของ file_get_contents ใน PHP
     async getLatestPrice() {
         try {
-            // เป้าหมายคือ URL .txt จากโค้ด PHP ที่คุณส่งมา
-            const targetUrl = 'http://www.thaigold.info/RealTimeDataV2/gtdata_.txt';
+            // 1. ใช้ Timestamp เพื่อป้องกันแคช
+            const timeStamp = new Date().getTime();
+            const targetUrl = `http://www.thaigold.info/RealTimeDataV2/gtdata_.txt?v=${timeStamp}`;
             
-            // ใช้ Proxy เพื่อเลี่ยงการโดนบล็อก (ทำหน้าที่แทน Backend PHP)
-            const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
+            // 2. เปลี่ยนมาใช้ /raw ของ allorigins เพื่อให้ได้ข้อมูลดิบตรงๆ เหมือน PHP
+            const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
 
             const response = await fetch(proxyUrl, { cache: 'no-store' });
+            
             if (!response.ok) throw new Error('API Response not ok');
             
-            const proxyData = await response.json();
+            // 3. แปลงข้อมูลดิบเป็น JSON Array โดยตรง
+            const rawData = await response.json();
             
-            // ข้อมูลจาก Proxy จะถูกห่อหุ้มมาใน .contents เราจึงต้องแกะออกและแปลงเป็น Array เหมือน JSON_decode ใน PHP
-            const rawData = JSON.parse(proxyData.contents);
-            
-            // ฟังก์ชันลบลูกน้ำ (,) ออกจากตัวเลข
+            // 🚨 Safety Check 1: ตรวจสอบว่าข้อมูลที่ได้มาเป็น Array จริงๆ ไม่ใช่ข้อความ Error
+            if (!Array.isArray(rawData) || rawData.length === 0) {
+                throw new Error('โครงสร้างข้อมูลที่ได้รับมาไม่ถูกต้อง');
+            }
+
+            // 🚨 Safety Check 2: ฟังก์ชันแปลงตัวเลขที่เข้มงวดขึ้น
             const parsePrice = (priceStr) => {
-                if (!priceStr) return 0;
-                return parseFloat(priceStr.toString().replace(/,/g, ''));
+                if (!priceStr) throw new Error('ไม่มีข้อมูลราคาถูกส่งมา');
+                
+                const parsed = parseFloat(priceStr.toString().replace(/,/g, ''));
+                
+                // ถ้าแปลงเลขไม่ได้ หรือราคากลายเป็น 0 ให้หยุดการทำงานทันที
+                if (isNaN(parsed) || parsed === 0) {
+                    throw new Error('ราคาผิดพลาด (ราคาเป็น 0 หรือไม่ใช่ตัวเลข)');
+                }
+                return parsed;
             };
 
-            // Mapping ข้อมูลให้ตรงกับ Array [0] = ทองคำแท่ง, [1] = ทองรูปพรรณ (ตามโครงสร้างใน PHP)
             const standardData = {
                 bar: {
                     buy: parsePrice(rawData[0]?.bid),
@@ -44,8 +54,8 @@ export const GoldProvider = {
             return standardData;
 
         } catch (error) {
-            console.error("Connection lost or API error:", error);
-            // หากดึงข้อมูลไม่ได้ ให้แสดงหน้าจอเป็น ---
+            console.error("ระบบทำงานผิดพลาด หรือขาดการเชื่อมต่อ:", error);
+            // ตัดเข้าโหมดปลอดภัย (หน้าจอแสดงเป็นขีด ---) เพื่อป้องกันการซื้อขายผิดราคา
             return { status: 'disconnected' };
         }
     }
