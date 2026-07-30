@@ -216,7 +216,7 @@ body {
     display: inline-block;
     white-space: nowrap;
     padding-left: 100vw;
-    font-size: 3vh;
+    font-size: 2.8vh;
     font-weight: 500;
     color: #FFFFFF;
     /* แอนิเมชันจะถูกคุมความเร็วด้วย JS ตามความยาวข้อความ */
