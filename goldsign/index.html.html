@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ราคาทองวันนี้ - Gold Price Dashboard</title>
+    
+    <!-- นำเข้าฟอนต์ Kanit จาก Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- เชื่อมต่อไฟล์ CSS -->
+    <link rel="stylesheet" href="css/style.css">
+    
+    <!-- เตรียม PWA Manifest (จะสร้างใน Phase ท้ายๆ) -->
+    <link rel="manifest" href="manifest.json">
+</head>
+<body>
+    <!-- ระบบ Overlay ตอนโหลดข้อมูล / รอเชื่อมต่อ -->
+    <div id="loading-overlay" class="overlay">
+        <div class="loader-content">
+            <div class="spinner"></div>
+            <h2 id="loading-text">กำลังโหลดข้อมูลร้าน...</h2>
+        </div>
+    </div>
+
+    <!-- ส่วนหัว (Header) -->
+    <header class="top-bar">
+        <div class="header-left">
+            <img id="shop-logo" src="images/logo.png" alt="โลโก้ร้าน" onerror="this.style.display='none'">
+        </div>
+        <div class="header-center">
+            <h1 id="shop-name">ชื่อร้านทอง</h1>
+        </div>
+        <div class="header-right">
+            <div id="date-display" class="date-text">--/--/----</div>
+            <div id="time-display" class="time-text">--:--:--</div>
+        </div>
+    </header>
+
+    <!-- พื้นที่แสดงราคาทอง (Main Dashboard) -->
+    <main class="dashboard-content">
+        <div class="page-title">
+            <h2>ราคาทองวันนี้</h2>
+            <p id="last-update" class="update-text">อัปเดตล่าสุด: กำลังโหลด...</p>
+        </div>
+
+        <div class="price-cards-container">
+            <!-- Card 1: ทองคำแท่ง -->
+            <div class="price-card">
+                <div class="card-header">
+                    <h3>ทองคำแท่ง 96.5%</h3>
+                </div>
+                <div class="card-body">
+                    <div class="price-row">
+                        <span class="price-label">รับซื้อ (บาท)</span>
+                        <div class="price-value-container">
+                            <span id="bar-buy" class="price-value">--</span>
+                        </div>
+                    </div>
+                    <div class="divider"></div>
+                    <div class="price-row">
+                        <span class="price-label">ขายออก (บาท)</span>
+                        <div class="price-value-container">
+                            <span id="bar-sell" class="price-value">--</span>
+                            <span id="bar-diff" class="price-diff"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 2: ทองรูปพรรณ -->
+            <div class="price-card">
+                <div class="card-header">
+                    <h3>ทองรูปพรรณ 96.5%</h3>
+                </div>
+                <div class="card-body">
+                    <div class="price-row">
+                        <span class="price-label">รับซื้อ (บาท)</span>
+                        <div class="price-value-container">
+                            <span id="ornament-buy" class="price-value">--</span>
+                        </div>
+                    </div>
+                    <div class="divider"></div>
+                    <div class="price-row">
+                        <span class="price-label">ขายออก (บาท)</span>
+                        <div class="price-value-container">
+                            <span id="ornament-sell" class="price-value">--</span>
+                            <span id="ornament-diff" class="price-diff"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- ส่วนล่าง (Footer Ticker) -->
+    <footer class="bottom-bar">
+        <div class="ticker-wrap">
+            <div id="ticker-content" class="ticker">
+                <!-- ข้อความวิ่งจะถูกเติมด้วย JavaScript -->
+                ยินดีต้อนรับสู่ร้านทองของเรา กำลังโหลดข้อมูล...
+            </div>
+        </div>
+    </footer>
+
+    <!-- เรียกใช้ JavaScript แบบ Module -->
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>

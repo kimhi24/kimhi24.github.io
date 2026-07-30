@@ -1,0 +1,90 @@
+// js/gold.js
+
+let previousPrices = {
+    barBuy: 0, barSell: 0, ornamentBuy: 0, ornamentSell: 0
+};
+
+const formatNumber = (num) => {
+    return Number(num).toLocaleString('th-TH', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+};
+
+const animatePriceUpdate = (elementId, diffId, newValue, oldValue) => {
+    const el = document.getElementById(elementId);
+    const diffEl = document.getElementById(diffId);
+    
+    if (newValue === oldValue || oldValue === 0) {
+        el.textContent = formatNumber(newValue);
+        if(diffEl) diffEl.textContent = ""; 
+        return;
+    }
+
+    const diff = newValue - oldValue;
+    el.textContent = formatNumber(newValue);
+
+    el.classList.remove('highlight-up', 'highlight-down');
+    if(diffEl) {
+        diffEl.classList.remove('up', 'down');
+        diffEl.textContent = "";
+    }
+
+    void el.offsetWidth; 
+
+    if (diff > 0) {
+        el.classList.add('highlight-up');
+        if(diffEl) {
+            diffEl.classList.add('up');
+            diffEl.textContent = `▲ +${formatNumber(diff)}`;
+        }
+    } else if (diff < 0) {
+        el.classList.add('highlight-down');
+        if(diffEl) {
+            diffEl.classList.add('down');
+            diffEl.textContent = `▼ ${formatNumber(diff)}`;
+        }
+    }
+
+    setTimeout(() => {
+        el.classList.remove('highlight-up', 'highlight-down');
+    }, 3000);
+};
+
+export function updateGoldUI(data) {
+    const updateText = document.getElementById('last-update');
+
+    // 🚨 กรณีขาดการเชื่อมต่อกับ API
+    if (data.status === 'disconnected') {
+        document.getElementById('bar-buy').textContent = "---";
+        document.getElementById('bar-sell').textContent = "---";
+        document.getElementById('ornament-buy').textContent = "---";
+        document.getElementById('ornament-sell').textContent = "---";
+        
+        // ล้างส่วนต่างราคาออก
+        ['bar-diff', 'ornament-diff'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) { el.textContent = ""; el.classList.remove('up', 'down'); }
+        });
+
+        // แสดงข้อความเตือน
+        updateText.textContent = "⚠️ ขาดการเชื่อมต่อ: ไม่สามารถดึงข้อมูลราคาทองได้";
+        updateText.style.color = "var(--down-color)";
+        updateText.style.fontWeight = "bold";
+        return; // หยุดการทำงานส่วนอื่น
+    }
+
+    // กรณีเชื่อมต่อปกติ (คืนค่าสีข้อความอัปเดต)
+    updateText.style.color = "";
+    updateText.style.fontWeight = "normal";
+    updateText.textContent = `อัปเดตล่าสุด: ${data.updateTime}`;
+
+    animatePriceUpdate('bar-buy', null, data.bar.buy, previousPrices.barBuy);
+    animatePriceUpdate('bar-sell', 'bar-diff', data.bar.sell, previousPrices.barSell);
+    animatePriceUpdate('ornament-buy', null, data.ornament.buy, previousPrices.ornamentBuy);
+    animatePriceUpdate('ornament-sell', 'ornament-diff', data.ornament.sell, previousPrices.ornamentSell);
+
+    previousPrices = {
+        barBuy: data.bar.buy,
+        barSell: data.bar.sell,
+        ornamentBuy: data.ornament.buy,
+        ornamentSell: data.ornament.sell
+    };
+}

@@ -1,0 +1,22 @@
+gold-price-dashboard/
+│
+├── index.html                # ไฟล์หน้าจอหลัก (UI)
+├── manifest.json             # ตั้งค่า PWA สำหรับติดตั้งบนอุปกรณ์
+├── service-worker.js         # จัดการ Cache และ Offline Mode
+│
+├── config/
+│   └── config.json           # ⚙️ ไฟล์ตั้งค่าร้าน (หัวใจหลัก ควบคุมทุกอย่างจากที่นี่)
+│
+├── css/
+│   └── style.css             # จัดการ Layout และ Theme (อ่านค่าสีจาก Config)
+│
+├── js/
+│   ├── app.js                # Controller หลัก (ร้อยเรียงทุกส่วนเข้าด้วยกัน)
+│   ├── config.js             # โมดูลสำหรับโหลดไฟล์ config.json
+│   ├── ui.js                 # โมดูลจัดการหน้าจอ (อัปเดตตัวเลข, เวลา, Ticker)
+│   ├── api.js                # โมดูล Data Provider ดึงข้อมูลจาก thaigold.info
+│   └── tv-mode.js            # ตรวจจับพารามิเตอร์ ?mode=tv สำหรับ Full Screen
+│
+└── images/
+    ├── logo.png              # (จะใช้รูป S__145252365.jpg จำลองเป็นไฟล์นี้)
+    └── icon.png              # ไอคอนสำหรับ PWA

@@ -1,0 +1,232 @@
+/* --- 1. CSS Variables สำหรับระบบ Theme (ดึงข้อมูลทับด้วย JS ได้) --- */
+:root {
+    --primary-color: #D4AF37;     /* สีทอง */
+    --secondary-color: #0033A0;   /* สีน้ำเงิน */
+    --bg-color: #F8F9FA;          /* สีขาวหม่นเล็กน้อย ไม่ให้จ้าเกินไป */
+    --card-bg: #FFFFFF;           /* สีขาวบริสุทธิ์ สำหรับป้ายราคา */
+    --text-dark: #0A192F;         /* สีน้ำเงินเข้มเกือบดำ สำหรับตัวหนังสือ */
+    --accent-color: #CC0000;      /* สีแดง */
+    --up-color: #009900;          /* สีเขียว (ราคาขึ้น) */
+    --down-color: #CC0000;        /* สีแดง (ราคาลง) */
+    
+    --font-main: 'Kanit', sans-serif;
+}
+
+/* --- 2. Reset & Base Settings สำหรับ TV --- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-main);
+    background-color: var(--bg-color);
+    color: var(--text-dark);
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden; /* บังคับปิด Scroll Bar ถาวร */
+    display: flex;
+    flex-direction: column;
+    user-select: none; /* ห้าม Select ข้อความ */
+    cursor: default; /* ซ่อนเมาส์ (จะจัดการเพิ่มในโหมด TV) */
+}
+
+/* --- 3. Loading Overlay --- */
+.overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background-color: var(--secondary-color);
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--primary-color);
+    transition: opacity 0.5s ease;
+}
+.loader-content {
+    text-align: center;
+}
+.spinner {
+    border: 8px solid rgba(212, 175, 55, 0.3);
+    border-top: 8px solid var(--primary-color);
+    border-radius: 50%;
+    width: 80px;
+    height: 80px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px auto;
+}
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+/* --- 4. Header (Top Bar) --- */
+.top-bar {
+    height: 15vh;
+    background-color: var(--secondary-color);
+    color: #FFFFFF;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 4vw;
+    border-bottom: 5px solid var(--primary-color);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.header-left { width: 25%; display: flex; align-items: center; }
+#shop-logo { max-height: 10vh; max-width: 100%; object-fit: contain; }
+
+.header-center { width: 50%; text-align: center; }
+#shop-name {
+    font-size: 5vh;
+    font-weight: 700;
+    color: var(--primary-color);
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    letter-spacing: 2px;
+}
+
+.header-right { width: 25%; text-align: right; }
+.date-text { font-size: 2.5vh; color: var(--primary-color); }
+.time-text { font-size: 4.5vh; font-weight: 700; }
+
+/* --- 5. Main Dashboard (เนื้อหากลางจอ) --- */
+.dashboard-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 2vh 4vw;
+}
+
+.page-title {
+    text-align: center;
+    margin-bottom: 3vh;
+}
+.page-title h2 {
+    font-size: 6vh;
+    font-weight: 600;
+    color: var(--secondary-color);
+}
+.update-text {
+    font-size: 2vh;
+    color: #666;
+    margin-top: 1vh;
+}
+
+/* Price Cards Grid */
+.price-cards-container {
+    display: flex;
+    gap: 4vw;
+    justify-content: center;
+    height: 55vh;
+}
+
+.price-card {
+    flex: 1;
+    background: var(--card-bg);
+    border: 4px solid var(--primary-color);
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,51,160,0.15);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.card-header {
+    background-color: var(--secondary-color);
+    color: var(--primary-color);
+    text-align: center;
+    padding: 2vh 0;
+}
+.card-header h3 {
+    font-size: 4.5vh;
+    font-weight: 500;
+}
+
+.card-body {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    padding: 0 4vw;
+}
+
+.price-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.price-label {
+    font-size: 4vh;
+    font-weight: 400;
+    color: var(--text-dark);
+}
+
+.price-value-container {
+    display: flex;
+    align-items: center;
+    gap: 2vw;
+}
+
+.price-value {
+    font-size: 8vh;
+    font-weight: 700;
+    color: var(--secondary-color);
+    font-variant-numeric: tabular-nums; /* ทำให้ตัวเลขกว้างเท่ากัน ไม่ขยับไปมา */
+}
+
+/* Animations สำหรับตัวเลขตอนเปลี่ยนค่า */
+.price-value.highlight-up { color: var(--up-color); text-shadow: 0 0 20px rgba(0, 153, 0, 0.5); }
+.price-value.highlight-down { color: var(--down-color); text-shadow: 0 0 20px rgba(204, 0, 0, 0.5); }
+
+.price-diff {
+    font-size: 3.5vh;
+    font-weight: 600;
+    min-width: 120px;
+    text-align: right;
+}
+.price-diff.up { color: var(--up-color); }
+.price-diff.down { color: var(--down-color); }
+
+.divider {
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
+    margin: 1vh 0;
+}
+
+/* --- 6. Footer (Ticker ข้อความวิ่ง) --- */
+.bottom-bar {
+    height: 10vh;
+    background-color: var(--accent-color); /* ใช้สีแดงที่แถบวิ่งตามธีม หรือเปลี่ยนเป็นทองก็ได้ */
+    border-top: 4px solid var(--primary-color);
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    position: relative;
+}
+
+.ticker-wrap {
+    width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.ticker {
+    display: inline-block;
+    white-space: nowrap;
+    padding-left: 100vw;
+    font-size: 4.5vh;
+    font-weight: 500;
+    color: #FFFFFF;
+    /* แอนิเมชันจะถูกคุมความเร็วด้วย JS ตามความยาวข้อความ */
+    animation: ticker linear infinite;
+}
+
+@keyframes ticker {
+    0% { transform: translate3d(0, 0, 0); }
+    100% { transform: translate3d(-100%, 0, 0); }
+}
+
+/* โหมด TV: ซ่อนเมาส์ */
+body.tv-mode {
+    cursor: none;
+}
