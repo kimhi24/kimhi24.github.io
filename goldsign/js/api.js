@@ -5,35 +5,37 @@ export const GoldProvider = {
 
     async getLatestPrice() {
         try {
-            // 1. ใช้ Timestamp เพื่อป้องกันแคช
+            // 1. ใช้ Timestamp เพื่อป้องกันแคช (ดึงข้อมูลใหม่เสมอ)
             const timeStamp = new Date().getTime();
             const targetUrl = `http://www.thaigold.info/RealTimeDataV2/gtdata_.txt?v=${timeStamp}`;
             
-            // 2. เปลี่ยนมาใช้ /raw ของ allorigins เพื่อให้ได้ข้อมูลดิบตรงๆ เหมือน PHP
-            const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
+            // 2. เปลี่ยน Proxy ตัวใหม่ที่เร็วกว่า (corsproxy.io)
+            const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
 
-            const response = await fetch(proxyUrl, { cache: 'no-store' });
+            // 3. สร้างระบบตั้งเวลา (Timeout) 8 วินาที ป้องกันหน้าเว็บค้างถ้าระบบสมาคมฯ ช้า
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 8000); 
+
+            // เริ่มดึงข้อมูล
+            const response = await fetch(proxyUrl, { 
+                cache: 'no-store',
+                signal: controller.signal // ผูกระบบ Timeout
+            });
             
+            clearTimeout(timeoutId); // ดึงสำเร็จ ให้ยกเลิกการนับเวลา
+
             if (!response.ok) throw new Error('API Response not ok');
             
-            // 3. แปลงข้อมูลดิบเป็น JSON Array โดยตรง
             const rawData = await response.json();
             
-            // 🚨 Safety Check 1: ตรวจสอบว่าข้อมูลที่ได้มาเป็น Array จริงๆ ไม่ใช่ข้อความ Error
             if (!Array.isArray(rawData) || rawData.length === 0) {
                 throw new Error('โครงสร้างข้อมูลที่ได้รับมาไม่ถูกต้อง');
             }
 
-            // 🚨 Safety Check 2: ฟังก์ชันแปลงตัวเลขที่เข้มงวดขึ้น
             const parsePrice = (priceStr) => {
-                if (!priceStr) throw new Error('ไม่มีข้อมูลราคาถูกส่งมา');
-                
+                if (!priceStr) throw new Error('ไม่มีข้อมูลราคา');
                 const parsed = parseFloat(priceStr.toString().replace(/,/g, ''));
-                
-                // ถ้าแปลงเลขไม่ได้ หรือราคากลายเป็น 0 ให้หยุดการทำงานทันที
-                if (isNaN(parsed) || parsed === 0) {
-                    throw new Error('ราคาผิดพลาด (ราคาเป็น 0 หรือไม่ใช่ตัวเลข)');
-                }
+                if (isNaN(parsed) || parsed === 0) throw new Error('ราคาผิดพลาดเป็น 0');
                 return parsed;
             };
 
@@ -54,8 +56,8 @@ export const GoldProvider = {
             return standardData;
 
         } catch (error) {
-            console.error("ระบบทำงานผิดพลาด หรือขาดการเชื่อมต่อ:", error);
-            // ตัดเข้าโหมดปลอดภัย (หน้าจอแสดงเป็นขีด ---) เพื่อป้องกันการซื้อขายผิดราคา
+            console.error("ระบบดึงข้อมูลขัดข้อง หรือใช้เวลานานเกินไป:", error);
+            // ตัดเข้าโหมดปลอดภัย (หน้าจอแสดงเป็นขีด ---)
             return { status: 'disconnected' };
         }
     }
