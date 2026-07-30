@@ -5,24 +5,19 @@ export const GoldProvider = {
 
     async getLatestPrice() {
         try {
-            // 1. ใช้ Timestamp เพื่อป้องกันแคช (ดึงข้อมูลใหม่เสมอ)
             const timeStamp = new Date().getTime();
             const targetUrl = `http://www.thaigold.info/RealTimeDataV2/gtdata_.txt?v=${timeStamp}`;
-            
-            // 2. เปลี่ยน Proxy ตัวใหม่ที่เร็วกว่า (corsproxy.io)
             const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
 
-            // 3. สร้างระบบตั้งเวลา (Timeout) 8 วินาที ป้องกันหน้าเว็บค้างถ้าระบบสมาคมฯ ช้า
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 8000); 
 
-            // เริ่มดึงข้อมูล
             const response = await fetch(proxyUrl, { 
                 cache: 'no-store',
-                signal: controller.signal // ผูกระบบ Timeout
+                signal: controller.signal 
             });
             
-            clearTimeout(timeoutId); // ดึงสำเร็จ ให้ยกเลิกการนับเวลา
+            clearTimeout(timeoutId); 
 
             if (!response.ok) throw new Error('API Response not ok');
             
@@ -39,16 +34,33 @@ export const GoldProvider = {
                 return parsed;
             };
 
+            const updateItem = rawData.find(item => item.name === "Update");
+            const timeString = updateItem ? updateItem.ask : new Date().toLocaleTimeString('th-TH');
+
+            const associationItem = rawData.find(item => item.name === "สมาคมฯ");
+            if (!associationItem) {
+                throw new Error('ไม่พบข้อมูลราคาสมาคมใน API');
+            }
+
+            const barBuy = parsePrice(associationItem.bid);
+            const barSell = parsePrice(associationItem.ask);
+
+            // 3. คำนวณราคาทองรูปพรรณ (อัปเดตสูตรใหม่ตามที่ระบุ)
+            // - รับซื้อรูปพรรณ = แท่งรับซื้อ - 2.03%
+            // - ขายออกรูปพรรณ = แท่งขายออก + 800 (ค่ากำเหน็จ)
+            const ornamentBuy = barBuy - (barBuy * 0.0203); 
+            const ornamentSell = barSell + 800;
+
             const standardData = {
                 bar: {
-                    buy: parsePrice(rawData[0]?.bid),
-                    sell: parsePrice(rawData[0]?.ask)
+                    buy: barBuy,
+                    sell: barSell
                 },
                 ornament: {
-                    buy: parsePrice(rawData[1]?.bid),
-                    sell: parsePrice(rawData[1]?.ask)
+                    buy: ornamentBuy,
+                    sell: ornamentSell
                 },
-                updateTime: rawData[0]?.time || new Date().toLocaleTimeString('th-TH'),
+                updateTime: timeString,
                 status: 'connected'
             };
 
@@ -56,8 +68,7 @@ export const GoldProvider = {
             return standardData;
 
         } catch (error) {
-            console.error("ระบบดึงข้อมูลขัดข้อง หรือใช้เวลานานเกินไป:", error);
-            // ตัดเข้าโหมดปลอดภัย (หน้าจอแสดงเป็นขีด ---)
+            console.error("ระบบดึงข้อมูลขัดข้อง:", error);
             return { status: 'disconnected' };
         }
     }
