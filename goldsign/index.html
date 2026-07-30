@@ -28,7 +28,10 @@
     <!-- ส่วนหัว (Header) -->
     <div class="header-left"></div>
         <div class="header-center" style="display: flex; align-items: center; justify-content: center;">
-            <img id="shop-logo" src="" style="height: 100px; margin-right: 20px; object-fit: contain; display: none;" alt="โลโก้ร้าน">
+            <!-- บังคับใส่ที่อยู่ไฟล์รูปและลบคำสั่งซ่อน (display: none) ออกไป -->
+            <img id="shop-logo" src="images/logo.png" style="height: 100px; margin-right: 20px; object-fit: contain;" alt="โลโก้ร้าน">
+            
+            <!-- ชื่อร้านปล่อยให้เป็น Dynamic รอรับค่าจาก JavaScript เหมือนเดิม -->
             <h1 id="shop-name" style="margin: 0;">กำลังโหลดชื่อร้าน...</h1>
         </div>
         <div class="header-right">
